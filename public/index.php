@@ -1,7 +1,15 @@
 <?php
 
-$router = require __DIR__.'/../app.php';
+require __DIR__.'/../core/Autoloader.php';
+require __DIR__.'/../core/helpers.php';
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+Autoloader::register();
 
-$router->dispatch($uri, $_SERVER['REQUEST_METHOD']);
+$router = new Router();
+
+require __DIR__.'/../routes/web.php';
+
+$uri = parse_url($_SERVER['REQUEST_URI'])['path'];
+$method = $_SERVER['REQUEST_METHOD'];
+
+$router->dispatch($uri, $method);

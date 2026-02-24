@@ -17,7 +17,7 @@
         <?= $slot ?>
     </main>
 
-    <footer>
+    <footer class="bg-gray-900 text-gray-300 mt-20">
         <x-footer />
     </footer>
 </body>

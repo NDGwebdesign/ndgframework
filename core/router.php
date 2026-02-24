@@ -2,38 +2,47 @@
 
 class Router
 {
-    protected array $routes = [];
+    protected $routes = [];
 
-    public function add($method, $uri, $action)
+    public function get($uri, $action)
     {
-        $route = new RouteDefinition($method, $uri, $action, $this);
-        $this->routes[$method][$uri] = $route;
+        $this->routes['GET'][$uri] = $action;
+    }
 
-        return $route;
+    public function post($uri, $action)
+    {
+        $this->routes['POST'][$uri] = $action;
     }
 
     public function dispatch($uri, $method)
     {
-        $route = $this->routes[$method][$uri] ?? null;
+        $action = $this->routes[$method][$uri] ?? null;
 
-        if (!$route) {
+        if (!$action) {
             http_response_code(404);
-            echo "404 page";
+            echo "404";
             return;
         }
 
-        $action = $route->action;
-
-        // Closure route
         if ($action instanceof Closure) {
             echo $action();
             return;
         }
 
-        // Controller route
         [$controller, $method] = $action;
 
+        if (!class_exists($controller)) {
+            throw new Exception("Controller $controller not found");
+        }
+
         $controller = new $controller;
-        echo $controller->$method();
+
+        if (!method_exists($controller, $method)) {
+            throw new Exception("Method $method not found");
+        }
+
+        $response = $controller->$method();
+
+        echo $response;
     }
 }

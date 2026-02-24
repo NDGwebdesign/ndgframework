@@ -2,66 +2,58 @@
 
 function view($view, $data = [])
 {
-    $view = str_replace('.', '/', $view);
-    extract($data);
+    return new View($view, $data);
+}
 
-    ob_start();
-    require __DIR__."/../resources/view/$view.php";
-    $html = ob_get_clean();
-
-    return parseComponents($html);
+function e($value)
+{
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
 function parseComponents($html)
 {
-    // paired tags met slot
-    $html = preg_replace_callback(
-        '/<x-([a-zA-Z0-9\-]+)>(.*?)<\/x-\1>/s',
-        function ($matches) {
+    $resolveComponent = function ($component, $slot = '') {
+        $layout = __DIR__."/../resources/layouts/$component.php";
+        $componentFile = __DIR__."/../resources/components/$component.php";
 
-            $component = $matches[1];
-            $slot = $matches[2];
+        $file = file_exists($layout) ? $layout : $componentFile;
 
-            $fileLayouts = __DIR__."/../resources/layouts/$component.php";
-            $fileComponents = __DIR__."/../resources/components/$component.php";
+        if (!file_exists($file)) {
+            return "<!-- component $component not found -->";
+        }
 
-            $file = file_exists($fileLayouts)
-                ? $fileLayouts
-                : $fileComponents;
+        ob_start();
+        require $file;
+        return ob_get_clean();
+    };
 
-            if (!file_exists($file)) {
-                return "<!-- component $component not found -->";
-            }
+    $previous = null;
 
-            ob_start();
-            require $file;
-            return ob_get_clean();
-        },
-        $html
-    );
+    while ($previous !== $html) {
+        $previous = $html;
 
-    // self closing components
-    $html = preg_replace_callback(
-        '/<x-([a-zA-Z0-9\-]+)\s*\/>/',
-        function ($matches) {
+        $html = preg_replace_callback(
+            '/<x-([a-zA-Z0-9\-]+)\s*\/\s*>/',
+            function ($matches) use ($resolveComponent) {
+                $component = $matches[1];
+                return $resolveComponent($component);
+            },
+            $html
+        );
 
-            $component = $matches[1];
-            $file = __DIR__."/../resources/components/$component.php";
-
-            if (!file_exists($file)) {
-                return "<!-- component $component not found -->";
-            }
-
-            ob_start();
-            require $file;
-            return ob_get_clean();
-        },
-        $html
-    );
+        $html = preg_replace_callback(
+            '/<x-([a-zA-Z0-9\-]+)>(.*?)<\/x-\1>/s',
+            function ($matches) use ($resolveComponent) {
+                $component = $matches[1];
+                $slot = $matches[2];
+                return $resolveComponent($component, $slot);
+            },
+            $html
+        );
+    }
 
     return $html;
 }
-
 function vite($file)
 {
     $manifestPath = __DIR__ . '/../public/build/.vite/manifest.json';
