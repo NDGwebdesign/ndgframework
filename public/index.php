@@ -2,6 +2,8 @@
 
 require __DIR__.'/../core/Autoloader.php';
 require __DIR__.'/../core/helpers.php';
+require __DIR__.'/../core/Env.php';
+Env::load(__DIR__.'/../.env');
 
 Autoloader::register();
 

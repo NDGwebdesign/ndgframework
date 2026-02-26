@@ -8,9 +8,6 @@ require_once __DIR__.'/core/Env.php';
 
 Env::load(__DIR__.'/.env');
 
-
-// controllers laden (later composer autoload)
-
 $router = new Router();
 Route::setRouter($router);
 

@@ -34,4 +34,26 @@ class View
     {
         return $this->render();
     }
+
+    public static function make($name){
+        if (!$name) {
+            echo "Please provide a view name.\n";
+            return;
+        }
+
+        $fileName = __DIR__ . "/../resources/view/{$name}.php";
+
+        if (!is_dir(dirname($fileName))) {
+            mkdir(dirname($fileName), 0777, true);
+        }
+        //make route in web.php
+        $webFile = __DIR__ . "/../routes/web.php";
+        $route = "\$router->get('/{$name}', function () {
+    return view('{$name}');
+});\n";
+        file_put_contents($webFile, $route, FILE_APPEND);
+
+        file_put_contents($fileName, "<h1>This is the {$name} view</h1>");
+        echo "View created: {$fileName}\n";
+    }
 }
