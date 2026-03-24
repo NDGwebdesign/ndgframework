@@ -5,9 +5,30 @@ function view($view, $data = [])
     return new View($view, $data);
 }
 
+function redirect($path)
+{
+    header("Location: $path");
+    exit;
+}
+
 function e($value)
 {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+function csrf_field()
+{
+    return '<input type="hidden" name="_token" value="' . e(Csrf::token()) . '">';
+}
+
+function auth_user()
+{
+    return Auth::user();
+}
+
+function auth_check()
+{
+    return Auth::check();
 }
 
 function parseComponents($html)
