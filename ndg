@@ -35,6 +35,10 @@ switch ($command) {
         handleComponentsCommand($argv);
         break;
 
+    case 'make:mvc':
+        mvc($argv);
+        break;
+
     default:
         echo "NDG CLI\n";
         echo "Commands:\n";
@@ -43,6 +47,8 @@ switch ($command) {
         echo "  php ndg migrate:rollback\n";
         echo "  php ndg make:view <name>\n";
         echo "  php ndg components [list|search|install]\n";
+        echo "  php ndg make:mvc <name>\n";
+        break;
 }
 
 function handleComponentsCommand(array $argv): void
@@ -133,5 +139,47 @@ function handleComponentsCommand(array $argv): void
         echo "Gebruik: php ndg components [list|search|install]\n";
     } catch (Throwable $e) {
         echo "Marketplace fout: " . $e->getMessage() . "\n";
+    }
+}
+
+function mvc(array $argv): void
+{
+    $name = $argv[2] ?? null;
+
+    if (!$name) {
+        echo "Gebruik: php ndg make:mvc <Naam>\n";
+        return;
+    }
+
+    $controllerName = ucfirst($name) . 'Controller';
+    $modelName = ucfirst($name);
+    $viewName = strtolower($name);
+
+    // Maak controller
+    $controllerPath = __DIR__ . "/app/Controllers/{$controllerName}.php";
+    if (!file_exists($controllerPath)) {
+        file_put_contents($controllerPath, "<?php\n\nclass {$controllerName} extends Controller\n{\n    // Controller code hier\n}\n");
+        echo "Controller gemaakt: {$controllerPath}\n";
+    } else {
+        echo "Controller bestaat al: {$controllerPath}\n";
+    }
+
+    // Maak model
+    $modelPath = __DIR__ . "/app/Models/{$modelName}.php";
+    if (!file_exists($modelPath)) {
+        file_put_contents($modelPath, "<?php\n\nclass {$modelName} extends Model\n{\n    protected static \$table = '" . strtolower($name) . "';\n}\n");
+        echo "Model gemaakt: {$modelPath}\n";
+    } else {
+        echo "Model bestaat al: {$modelPath}\n";
+    }
+
+    // Maak view
+    $viewDirectory = __DIR__ . "/resources/view/{$viewName}";
+    if (!is_dir($viewDirectory)) {
+        mkdir($viewDirectory);
+        file_put_contents("{$viewDirectory}/index.php", "<x-main-layout>\n\n<!-- View code hier -->\n\n</x-main-layout>");
+        echo "View gemaakt: {$viewDirectory}/index.php\n";
+    } else {
+        echo "View bestaat al: {$viewDirectory}\n";
     }
 }

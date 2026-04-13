@@ -3,6 +3,7 @@
 $router->get('/', [HomeController::class, 'index']);
 $router->get('/blog', [HomeController::class, 'blog']);
 $router->get('/users', [UserController::class, 'index']);
+$router->post('/users', [UserController::class, 'store']);
 $router->get('/register', [AuthController::class, 'showRegister']);
 $router->post('/register', [AuthController::class, 'register']);
 $router->get('/login', [AuthController::class, 'showLogin']);
