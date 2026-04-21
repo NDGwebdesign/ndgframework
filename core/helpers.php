@@ -16,6 +16,19 @@ function e($value)
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+function app_name()
+{
+    return Env::get('APP_NAME', 'ndgframework');
+}
+
+function app_url($path = '')
+{
+    $base = rtrim(Env::get('APP_URL', 'http://localhost'), '/');
+    $path = ltrim($path, '/');
+
+    return $path === '' ? $base : $base . '/' . $path;
+}
+
 function csrf_field()
 {
     return '<input type="hidden" name="_token" value="' . e(Csrf::token()) . '">';
@@ -77,6 +90,21 @@ function parseComponents($html)
 }
 function vite($file)
 {
+    $isLocal = Env::get('APP_ENV', 'local') === 'local';
+    $hotFile = __DIR__ . '/../public/hot';
+
+    if ($isLocal && file_exists($hotFile)) {
+        $devBase = trim((string) file_get_contents($hotFile));
+        $devBase = $devBase !== '' ? rtrim($devBase, '/') : app_url();
+
+        if (str_ends_with($file, '.js')) {
+            return "<script type='module' src='{$devBase}/@vite/client'></script>\n"
+                . "<script type='module' src='{$devBase}/{$file}'></script>";
+        }
+
+        return "<link rel='stylesheet' href='{$devBase}/{$file}'>";
+    }
+
     $manifestPath = __DIR__ . '/../public/build/.vite/manifest.json';
 
     if (!file_exists($manifestPath)) {
@@ -89,6 +117,12 @@ function vite($file)
         return "<!-- asset $file not found -->";
     }
 
-    return "<link rel='stylesheet' href='/build/{$manifest[$file]['file']}'>";
+    $asset = $manifest[$file]['file'];
+
+    if (str_ends_with($asset, '.js')) {
+        return "<script type='module' src='/build/{$asset}'></script>";
+    }
+
+    return "<link rel='stylesheet' href='/build/{$asset}'>";
 }
 

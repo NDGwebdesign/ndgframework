@@ -18,8 +18,8 @@
                 Documentation
             </a>
 
-            <a href="https://github.com"
-                class="px-6 py-3 border rounded-lg hover:bg-gray-100 transition">
+            <a href="https://github.com/NDGwebdesign"
+                class="px-6 py-3 border rounded-lg hover:bg-gray-100 transition" target="_blank">
                 GitHub
             </a>
         </div>

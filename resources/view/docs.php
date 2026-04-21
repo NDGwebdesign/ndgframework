@@ -1,5 +1,5 @@
 <x-main-layout>
-	<section class="bg-gradient-to-b from-white to-blue-50/40 border-b">
+	<section class="bg-linear-to-b from-white to-blue-50/40 border-b">
 		<div class="max-w-6xl mx-auto px-6 py-16">
 			<div class="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-700">
 				<span class="font-semibold">NDG Framework</span>
@@ -220,6 +220,17 @@ redirect('/login');
 csrf_field();
 auth_check();
 auth_user();</code></pre>
+					</div>
+					<p class="text-gray-600 mt-4">Voor bestandswerk is er nu ook <span class="font-semibold">FileManager</span> voor tekst, regels en CSV.</p>
+					<div class="mt-4 bg-white border rounded-2xl p-5 text-sm text-gray-700 overflow-x-auto">
+						<pre><code>$content = FileManager::read(__DIR__ . '/data/example.txt');
+$rows = FileManager::readCsv(__DIR__ . '/data/users.csv');
+$users = FileManager::readCsvAssoc(__DIR__ . '/data/users.csv');
+
+FileManager::write(__DIR__ . '/data/output.txt', 'Hello world');
+FileManager::append(__DIR__ . '/data/output.txt', PHP_EOL . 'More text');
+FileManager::insertAtLine(__DIR__ . '/data/output.txt', 3, 'Inserted line');
+FileManager::appendCsvRow(__DIR__ . '/data/users.csv', ['NDG', 'info@ndg.nl']);</code></pre>
 					</div>
 				</section>
 			</div>

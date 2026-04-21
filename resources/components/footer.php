@@ -30,9 +30,9 @@
             <h3 class="text-white font-semibold mb-4">Community</h3>
 
             <ul class="space-y-2 text-sm">
-                <li><a href="#" class="hover:text-white">GitHub</a></li>
-                <li><a href="#" class="hover:text-white">Discord</a></li>
-                <li><a href="#" class="hover:text-white">Twitter</a></li>
+                <li><a href="https://github.com/NDGwebdesign" class="hover:text-white" target="_blank">GitHub</a></li>
+                <li><a href="https://discord.gg/NDGwebdesign" class="hover:text-white" target="_blank">Discord</a></li>
+                <li><a href="https://twitter.com/NDGwebdesign" class="hover:text-white" target="_blank">Twitter</a></li>
             </ul>
         </div>
 
