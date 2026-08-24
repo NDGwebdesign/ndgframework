@@ -1,5 +1,8 @@
 <?php
 
+require_once __DIR__.'/Table.php';
+require_once __DIR__.'/TableAction.php';
+
 function view($view, $data = [])
 {
     return new View($view, $data);

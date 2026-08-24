@@ -12,9 +12,8 @@
 
 			<p class="text-lg text-gray-600 mt-4 max-w-3xl">
 				This guide includes the latest NDG updates: secure authentication, the new components marketplace,
-				and the improved CLI format using <span class="font-semibold">php ndg &lt;command&gt;</span>.
-			</p>
-
+					the new table component with search, sorting, filters and pagination, and the improved CLI format using
+					<span class="font-semibold">php ndg &lt;command&gt;</span>.
 			<div class="mt-8 flex flex-wrap gap-3">
 				<a href="#quickstart" class="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
 					Quick Start
@@ -57,6 +56,7 @@
 						<li><a class="hover:text-blue-600" href="#routing">Routing</a></li>
 						<li><a class="hover:text-blue-600" href="#controllers">Controllers</a></li>
 						<li><a class="hover:text-blue-600" href="#views">Views and components</a></li>
+						<li><a class="hover:text-blue-600" href="#tables">Tables</a></li>
 						<li><a class="hover:text-blue-600" href="#auth">Authentication</a></li>
 						<li><a class="hover:text-blue-600" href="#components-marketplace">Components marketplace</a></li>
 						<li><a class="hover:text-blue-600" href="#assets">Assets and Tailwind</a></li>
@@ -127,6 +127,32 @@ $router->post('/logout', [AuthController::class, 'logout']);</code></pre>
 &lt;/x-main-layout&gt;</code></pre>
 					</div>
 					<p class="text-gray-600 mt-3">Components are resolved from <span class="font-semibold">resources/components</span> and layouts from <span class="font-semibold">resources/layouts</span>.</p>
+				</section>
+
+				<section id="tables" class="scroll-mt-24">
+					<h2 class="text-2xl font-bold">Tables (New)</h2>
+					<p class="text-gray-600 mt-2">
+						Use the built-in <span class="font-semibold">Table</span> component to render data tables with Tailwind-friendly styling.
+						It supports searching, sorting, filters, pagination and action buttons out of the box.
+					</p>
+					<div class="mt-4 bg-gray-900 text-gray-100 rounded-2xl p-5 text-sm overflow-x-auto">
+						<pre><code>&lt;?=
+Table::make($users)
+    -&gt;column('name', 'Naam')
+    -&gt;column('email', 'E-mail')
+    -&gt;searchable(['name', 'email'])
+    -&gt;sortable(['name', 'email'])
+    -&gt;filters([
+        ['key' => 'role', 'label' => 'Rol', 'options' => ['admin' => 'Admin']]
+    ])
+    -&gt;actions([
+        EditAction::make(),
+        DeleteAction::make()
+    ])
+    -&gt;perPage(10)
+?&gt;</code></pre>
+					</div>
+					<p class="text-gray-600 mt-3">Open <span class="font-semibold">/table-demo</span> to see the feature in action.</p>
 				</section>
 
 				<section id="auth" class="scroll-mt-24">
@@ -230,7 +256,7 @@ $users = FileManager::readCsvAssoc(__DIR__ . '/data/users.csv');
 FileManager::write(__DIR__ . '/data/output.txt', 'Hello world');
 FileManager::append(__DIR__ . '/data/output.txt', PHP_EOL . 'More text');
 FileManager::insertAtLine(__DIR__ . '/data/output.txt', 3, 'Inserted line');
-FileManager::appendCsvRow(__DIR__ . '/data/users.csv', ['NDG', 'info@ndg.nl']);</code></pre>
+FileManager::appendCsvRow(__DIR__ . '/data/users.csv', ['NDG', 'info@ndg-webdesign.net']);</code></pre>
 					</div>
 				</section>
 			</div>
