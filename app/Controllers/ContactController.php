@@ -22,6 +22,12 @@ class ContactController extends Controller
             ->subject('We received your message')
             ->send(view('mail.contact-confirmation', compact('name', 'email', 'message')));
 
-        return view('contact-success');
+        notify()
+            ->title('Contact Form Submitted')
+            ->flashSuccess('Your message has been sent successfully.')
+            ->position('top-right')
+            ->duration(5000);
+
+        redirect('/contact');
     }
 }

@@ -8,6 +8,11 @@ function view($view, $data = [])
     return new View($view, $data);
 }
 
+function notify(): Notification
+{
+    return Notification::notify();
+}
+
 function redirect($path)
 {
     header("Location: $path");

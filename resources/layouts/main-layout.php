@@ -15,6 +15,7 @@
     </header>
 
     <main>
+        <?php Notification::renderFlashed(); ?>
         <?= $slot ?>
     </main>
 

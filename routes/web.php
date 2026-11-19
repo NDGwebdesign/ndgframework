@@ -20,3 +20,7 @@ $router->get('/contact-success', function () {
     return view('contact-success');
 });
 $router->get('/table-demo', [TableDemoController::class, 'index']);
+
+$router->get('/notify', function () {
+    return view('notify');
+});

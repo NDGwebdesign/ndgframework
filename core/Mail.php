@@ -42,38 +42,54 @@ class Mail
             $host = "ssl://" . $host;
         }
 
+        $name = $name ?: $from;
+        $domain = substr(strrchr((string) $from, '@'), 1) ?: 'localhost';
+
         $headers = [
-            "From: $name <$from>",
+            "Date: " . date('r'),
+            "Message-ID: <" . bin2hex(random_bytes(16)) . "@$domain>",
+            "From: =?UTF-8?B?" . base64_encode($name) . "?= <$from>",
+            "To: <$to>",
             "Reply-To: $from",
+            "Subject: =?UTF-8?B?" . base64_encode((string) $subject) . "?=",
             "MIME-Version: 1.0",
-            "Content-Type: text/html; charset=UTF-8"
+            "Content-Type: text/html; charset=UTF-8",
+            "Content-Transfer-Encoding: base64",
         ];
 
-        $socket = fsockopen($host, $port, $errno, $errstr, 10);
+        $socket = @fsockopen($host, (int) $port, $errno, $errstr, 10);
 
         if (!$socket) {
-            self::log($to, $subject, "SMTP ERROR: $errstr");
+            self::log($to, $subject, "SMTP ERROR: could not connect ($errno) $errstr");
             return false;
         }
 
-        self::smtpCmd($socket, "EHLO localhost");
+        stream_set_timeout($socket, 15);
 
-        if ($user && $pass && $user !== 'null') {
-            self::smtpCmd($socket, "AUTH LOGIN");
-            self::smtpCmd($socket, base64_encode($user));
-            self::smtpCmd($socket, base64_encode($pass));
+        try {
+            self::expect($socket, null, 220);
+            self::expect($socket, "EHLO $domain", 250);
+
+            if ($user && $pass && $user !== 'null') {
+                self::expect($socket, "AUTH LOGIN", 334);
+                self::expect($socket, base64_encode($user), 334);
+                self::expect($socket, base64_encode($pass), 235, '[password]');
+            }
+
+            self::expect($socket, "MAIL FROM:<$from>", 250);
+            self::expect($socket, "RCPT TO:<$to>", [250, 251]);
+            self::expect($socket, "DATA", 354);
+
+            $body = chunk_split(base64_encode($message), 76, "\r\n");
+            $data = implode("\r\n", $headers) . "\r\n\r\n" . $body . ".";
+
+            self::expect($socket, $data, 250, '[message data]');
+            self::smtpCmd($socket, "QUIT");
+        } catch (RuntimeException $e) {
+            fclose($socket);
+            self::log($to, $subject, "SMTP ERROR: " . $e->getMessage());
+            return false;
         }
-
-        self::smtpCmd($socket, "MAIL FROM:<$from>");
-        self::smtpCmd($socket, "RCPT TO:<$to>");
-        self::smtpCmd($socket, "DATA");
-
-        $data = "Subject: $subject\r\n";
-        $data .= implode("\r\n", $headers) . "\r\n\r\n";
-        $data .= $message . "\r\n.";
-
-        self::smtpCmd($socket, $data);
-        self::smtpCmd($socket, "QUIT");
 
         fclose($socket);
 
@@ -82,15 +98,46 @@ class Mail
         return true;
     }
 
+    protected static function expect($socket, $cmd, $codes, $label = null)
+    {
+        $response = $cmd === null ? self::readResponse($socket) : self::smtpCmd($socket, $cmd);
+        $code = (int) substr($response, 0, 3);
+
+        if (!in_array($code, (array) $codes, true)) {
+            $sent = $cmd === null ? '(greeting)' : ($label ?? $cmd);
+            throw new RuntimeException("$sent => " . trim($response ?: 'no response'));
+        }
+
+        return $response;
+    }
+
     protected static function smtpCmd($socket, $cmd)
     {
         fwrite($socket, $cmd . "\r\n");
-        return fgets($socket, 512);
+        return self::readResponse($socket);
+    }
+
+    protected static function readResponse($socket)
+    {
+        $response = '';
+
+        while (($line = fgets($socket, 515)) !== false) {
+            $response .= $line;
+            // Last line of a (multi-line) reply has a space after the code
+            if (isset($line[3]) && $line[3] === ' ') {
+                break;
+            }
+        }
+
+        return $response;
     }
 
     protected static function log($to, $subject, $message)
     {
-        $file = Env::get('MAIL_LOG', 'mail.log');
+        $file = trim((string) Env::get('MAIL_LOG', ''));
+        if ($file === '') {
+            $file = base_path('storage/logs/mail.log');
+        }
 
         $dir = dirname($file);
         if (!is_dir($dir)) {
